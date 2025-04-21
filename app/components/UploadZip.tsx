@@ -4,6 +4,7 @@ import {
   Typography,
   Modal,
   Button,
+  CircularProgress,
 } from '@mui/material';
 
 const style = {
@@ -18,7 +19,6 @@ const style = {
   p: 4,
 };
 
-// 👇 Define the prop types for your modal
 type UploadZipModalProps = {
   open: boolean;
   handleClose: () => void;
@@ -26,6 +26,7 @@ type UploadZipModalProps = {
 
 const UploadZipModal: React.FC<UploadZipModalProps> = ({ open, handleClose }) => {
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false); // 👈 loading state
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -33,17 +34,40 @@ const UploadZipModal: React.FC<UploadZipModalProps> = ({ open, handleClose }) =>
     }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!file) {
       alert("Please select a .zip file before submitting.");
       return;
     }
 
-    // Upload logic here
-    console.log('Submitted file:', file);
+    const formData = new FormData();
+    formData.append('file', file);
 
-    handleClose();
+    setLoading(true); // 👈 start loading
+
+    try {
+      const response = await fetch('http://127.0.0.1:8001/analyze', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Success:', data);
+        alert("Analysis submitted successfully!");
+        handleClose();
+      } else {
+        const errorText = await response.text();
+        console.error('Upload failed:', errorText);
+        alert("Failed to upload file.");
+      }
+    } catch (error) {
+      console.error('Error during file upload:', error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setLoading(false); // 👈 stop loading
+    }
   };
 
   return (
@@ -62,11 +86,16 @@ const UploadZipModal: React.FC<UploadZipModalProps> = ({ open, handleClose }) =>
             accept=".zip"
             onChange={handleFileChange}
             style={{ marginBottom: '20px' }}
+            disabled={loading}
           />
 
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-            <Button onClick={handleClose} variant="outlined">Cancel</Button>
-            <Button type="submit" variant="contained" color="primary">Submit</Button>
+            <Button onClick={handleClose} variant="outlined" disabled={loading}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="contained" color="primary" disabled={loading}>
+              {loading ? <CircularProgress size={24} color="inherit" /> : 'Submit'}
+            </Button>
           </Box>
         </form>
       </Box>

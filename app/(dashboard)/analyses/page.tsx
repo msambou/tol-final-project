@@ -2,80 +2,82 @@
 
 import * as React from 'react';
 import Typography from '@mui/material/Typography';
-
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
-  Paper, TablePagination, Button
+  Paper, Button
 } from '@mui/material';
 
-
-import Box from '@mui/material/Box';
-import Modal from '@mui/material/Modal';
 import UploadZipModal from '@/app/components/UploadZip';
 
-const style = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 400,
-  bgcolor: 'background.paper',
-  border: '2px solid #000',
-  boxShadow: 24,
-  p: 4,
+type Analysis = {
+  created_at: string;
+  topic: string;
 };
 
 
 export default function AnalysesPage() {
   const [open, setOpen] = React.useState(false);
+  const [rows, setRows] = React.useState<Analysis[]>([]);
+
+
   const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
+  const handleClose = (shouldReload = false) => {
+    setOpen(false);
+    if (shouldReload) {
+      fetchAnalyses(); // re-fetch after upload
+    }
+  };
 
-  const rows = [
-    { date: '2025-04-10', topic: 'React Hooks Overview' },
-    { date: '2025-04-09', topic: 'Material UI Integration' },
-    { date: '2025-04-08', topic: 'Redux Toolkit Basics' },
-    // Add more rows as needed
-  ];
+  const fetchAnalyses = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8001/analyses");
+      const data = await res.json();
+      setRows(data); // assuming the API returns an array of { date, topic }
+    } catch (err) {
+      console.error("Failed to fetch analyses:", err);
+    }
+  };
 
-  return <>
+  React.useEffect(() => {
+    fetchAnalyses();
+  }, []);
 
-    {/* Modal */}
-    <Button variant='contained' onClick={handleOpen}>New Analysis</Button>
-    <UploadZipModal open={open} handleClose={handleClose}/>
-    {/* End of Modal */}
-    <br></br>
-     <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        <TableHead>
-          <TableRow>
-            <TableCell>#</TableCell>
-            <TableCell align="center">Date</TableCell>
-            <TableCell align="center">Topic</TableCell>
-            <TableCell align="center">Action</TableCell>
-          </TableRow>
-        </TableHead>
+  return (
+    <>
+      {/* Upload Modal */}
+      <Button variant="contained" onClick={handleOpen}>
+        New Analysis
+      </Button>
+      <UploadZipModal open={open} handleClose={handleClose} />
 
-        
-        
-        <TableBody>
-          {rows.map((row, idx) => (
-            <TableRow
-              key={idx}
-              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-            >
-              <TableCell component="th" scope="row">
-                {idx+1}
-              </TableCell>
-              <TableCell align="center">{row.date}</TableCell>
-              <TableCell align="center">{row.topic}</TableCell>
-              <TableCell align="center">
-                  <Button variant="outlined" size="small">View</Button>
-                </TableCell>
+      {/* Analyses Table */}
+      <br /><br />
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="analyses table">
+          <TableHead>
+            <TableRow>
+              <TableCell>#</TableCell>
+              <TableCell align="center">Date</TableCell>
+              <TableCell align="center">Topic</TableCell>
+              <TableCell align="center">Action</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
-  </>
+          </TableHead>
+          <TableBody>
+            {rows.map((row, idx) => (
+              <TableRow key={idx}>
+                <TableCell>{idx + 1}</TableCell>
+                <TableCell align="right">{row.created_at}</TableCell>
+                <TableCell align="left">{row.topic}</TableCell>
+                <TableCell align="right">
+                  <Button variant="outlined" size="small">
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </>
+  );
 }
