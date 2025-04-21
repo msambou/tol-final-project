@@ -43,8 +43,12 @@ export default function HomePage() {
         setImprovements(parsedResponse.overall_improvements_students_need || "");
         setTopic(parsedResponse.topic_for_the_problem || "");
 
+        let scores = parsedResponse.student_scores_out_of_hundred_as_list_in_multiples_of_10;
+
+        scores.sort((a: any, b: any) => a.score - b.score);
+
         setScoreData(parsedResponse.student_scores_out_of_hundred_as_list_in_multiples_of_10 || [])
-        // console.log("scores", parsedResponse.student_scores_out_of_hundred_as_list_in_multiples_of_10)
+        console.log("scores", parsedResponse.student_scores_out_of_hundred_as_list_in_multiples_of_10)
 
         // Extract score list from topic field
         const scoreMatch = parsedResponse.topic_for_the_problem?.match(/\[\s*{[\s\S]*?}\s*\]/);
