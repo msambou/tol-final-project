@@ -8,8 +8,10 @@ import {
 } from '@mui/material';
 
 import UploadZipModal from '@/app/components/UploadZip';
+import { useRouter } from 'next/navigation';
 
 type Analysis = {
+  id: number,
   created_at: string;
   topic: string;
 };
@@ -19,12 +21,13 @@ export default function AnalysesPage() {
   const [open, setOpen] = React.useState(false);
   const [rows, setRows] = React.useState<Analysis[]>([]);
 
+  const router = useRouter(); // ← add this
 
   const handleOpen = () => setOpen(true);
   const handleClose = (shouldReload = false) => {
     setOpen(false);
     if (shouldReload) {
-      fetchAnalyses(); // re-fetch after upload
+      fetchAnalyses();
     }
   };
 
@@ -32,7 +35,7 @@ export default function AnalysesPage() {
     try {
       const res = await fetch("http://127.0.0.1:8001/analyses");
       const data = await res.json();
-      setRows(data); // assuming the API returns an array of { date, topic }
+      setRows(data);
     } catch (err) {
       console.error("Failed to fetch analyses:", err);
     }
@@ -44,13 +47,11 @@ export default function AnalysesPage() {
 
   return (
     <>
-      {/* Upload Modal */}
       <Button variant="contained" onClick={handleOpen}>
         New Analysis
       </Button>
       <UploadZipModal open={open} handleClose={handleClose} />
 
-      {/* Analyses Table */}
       <br /><br />
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="analyses table">
@@ -64,12 +65,16 @@ export default function AnalysesPage() {
           </TableHead>
           <TableBody>
             {rows.map((row, idx) => (
-              <TableRow key={idx}>
+              <TableRow key={row.id}>
                 <TableCell>{idx + 1}</TableCell>
                 <TableCell align="right">{row.created_at}</TableCell>
                 <TableCell align="left">{row.topic}</TableCell>
                 <TableCell align="right">
-                  <Button variant="outlined" size="small">
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => router.push(`/analyses/${row.id}`)} // ← navigate here
+                  >
                     View
                   </Button>
                 </TableCell>

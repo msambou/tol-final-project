@@ -7,10 +7,23 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import Box from "@mui/material/Box";
-import StatisticsSection from "../components/Statistics";
-import ScoreDistributionChart from "../components/ScoreDistribution";
+import StatisticsSection from "../../../components/Statistics";
+import ScoreDistributionChart from "../../../components/ScoreDistribution";
+import { useParams } from 'react-router-dom';
 
-export default function HomePage() {
+
+const ViewSelectedAnalysisPage: React.FC = () => {
+  const [id, setId] = React.useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    const path = window.location.pathname;
+    const match = path.match(/\/analyses\/([^/]+)/);
+    if (match) {
+      setId(match[1]); // Extracts the `id` from the URL and sets it
+    }
+  }, []);
+
+
   const [scoreData, setScoreData] = React.useState([]);
   const [strengths, setStrengths] = React.useState("");
   const [misconceptions, setMisconceptions] = React.useState("");
@@ -23,9 +36,12 @@ export default function HomePage() {
   const [countImprovements, setcountImprovements] = React.useState(0)
 
   React.useEffect(() => {
-    async function fetchLatestAnalysis() {
+    async function fetchAnalysis() {
+      if (!id) {
+        return;
+      }
       try {
-        const res = await fetch("http://127.0.0.1:8001/analyses/latest");
+        const res = await fetch(`http://127.0.0.1:8001/analyses/${id}`);
         const data = await res.json();
 
         const parsedResponse = JSON.parse(data.response);
@@ -65,17 +81,11 @@ export default function HomePage() {
       }
     }
 
-    fetchLatestAnalysis();
-  }, []);
+    fetchAnalysis();
+  }, [id]);
 
   return (
     <Box p={2}>
-      <Alert severity="info" sx={{ mb: 2 }}>
-        <Typography>
-          Welcome to the Misconceptions Analyzer dashboard.
-        </Typography>
-      </Alert>
-
       {topic && (
         <Box mb={2}>
           <Typography variant="h6">Topic</Typography>
@@ -131,3 +141,6 @@ export default function HomePage() {
     </Box>
   );
 }
+
+
+export default ViewSelectedAnalysisPage;
