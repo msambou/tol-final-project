@@ -1,6 +1,8 @@
-# Toolpad Core - Tutorial
+# Misconceptions Analyzer
 
-This example provides a minimal setup to get Toolpad Core working with the Next.js App Router.
+## Author
+Michael Sambou
+
 
 ## Framework Documentation
 https://mui.com/toolpad/core/react-page-container/
@@ -28,18 +30,4 @@ bun dev
 
 Open [http://localhost:5173](http://localhost:5173) with your browser to see the result.
 
-## Clone using `create-toolpad-app`
 
-To copy this example and customize it for your needs, run
-
-```bash
-npx create-toolpad-app@latest --example tutorial
-# or
-pnpm create toolpad-app --example tutorial
-```
-
-and follow the instructions in the terminal.
-
-## The source
-
-[Check out the source code](https://github.com/mui/toolpad/tree/master/examples/core/tutorial/)
